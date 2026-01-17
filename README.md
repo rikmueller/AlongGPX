@@ -110,7 +110,7 @@ python3 main.py
 
 Override GPX file:
 ```bash
-python3 main.py --gpx-file Tag1.gpx
+python3 main.py --gpx-file mytrack.gpx
 ```
 
 Use a preset:
@@ -135,7 +135,7 @@ python3 main.py --exclude fee=yes
 
 Full example:
 ```bash
-python3 main.py --preset camp_basic --include amenity=toilets --exclude fee=yes --gpx-file Tag1.gpx --project-name Tour2025
+python3 main.py --preset camp_basic --include amenity=toilets --exclude fee=yes --gpx-file mytrack.gpx --project-name Tour2025
 ```
 
 ## Output
@@ -160,5 +160,4 @@ Both files are saved in the directory defined by `project.output_path`.
 
 Pull requests are welcome. Please open an issue if you find bugs or want to request features.
 
-## License
 
