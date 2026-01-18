@@ -274,7 +274,7 @@ presets:
 
 > **Important:** When using `--preset`, `--include`, or `--exclude` arguments, the default filters from `config.yaml` are ignored. Only the filters you specify via CLI arguments will be used.
 
-Run with default configuration:
+Run with default configuration (config.yaml):
 ```bash
 python3 main.py
 ```
