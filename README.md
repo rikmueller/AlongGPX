@@ -102,7 +102,7 @@ overpass:
     - "https://overpass.private.coffee/api/interpreter"
     - "https://lz4.overpass-api.de/api/interpreter"
 
-# Path to the presets file containing predefined filter profiles (don´t change)
+# Path to the presets file containing predefined filter profiles (don´t change unless you know what you´re doing)
 presets_file: "presets.yaml"
 ```
 
@@ -136,6 +136,8 @@ presets:
 ```
 
 ## Usage
+
+> **Note for Windows users:** Replace `python3` with `python` in all commands below.
 
 Run with default configuration:
 ```bash
