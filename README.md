@@ -234,20 +234,6 @@ The following command line arguments can override settings from `config.yaml`:
 
 Presets are predefined filter profiles stored in `presets.yaml` that combine multiple OSM tags into reusable search templates. Instead of manually specifying include/exclude filters, you can use a preset name to quickly search for common amenities and landmarks.
 
-### How to use presets
-
-Use the `--preset` argument followed by a preset name:
-
-```bash
-python3 main.py --preset camp_basic
-```
-
-You can also combine multiple presets:
-
-```bash
-python3 main.py --preset camp_basic --preset drinking_water
-```
-
 ### Available presets
 
 For a complete list of available presets and how to create your own, see the [Presets documentation on the Wiki](https://github.com/rikmueller/osm_finder/wiki).
