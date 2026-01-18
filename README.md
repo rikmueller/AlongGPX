@@ -3,15 +3,105 @@
 osm_finder is a modular Python tool that analyzes OpenStreetMap POIs along a GPX track.  
 It combines GPX processing, Overpass API queries, flexible OSM filters, Excel export, and interactive Folium maps.
 
+## Use Case
+
+You have a GPX track (from your GPS device, mapping app, or drawn on a map). You want to find specific amenities, services, or landmarks near your planned route. Instead of manually searching the map for each area, osm_finder automatically finds everything for you and creates:
+- An Excel spreadsheet with details (name, contact info, distance from track, etc.)
+- An interactive map showing all results with color-coded markers
+
+Perfect for trip planning, hiking, bikepacking, road trips, or any adventure where you want to know what's nearby!
+
 ## Features
 - Read GPX tracks and compute total distance
 - Run segmented Overpass queries along the track
 - Use flexible OSM include and exclude filters
 - Use preset filter profiles for common search types
 - Validate filters automatically
-- Export all results to Excel
-- Generate an interactive Folium map with track and markers
+- Export all results to Excel with matching filter information
+- Generate an interactive Folium map with color-coded markers by filter type
 - Fully configurable through YAML and command line arguments
+- Accurate WGS84 geodesic distance calculations
+
+## Real-World Example: Bikepacking Tour Planning
+
+### Scenario
+You're planning a 5-day bikepacking tour through a region you've never visited. You have a GPX file with your planned route. You need to know:
+- Where can I safely camp with my tent?
+- Where are drinking water sources along the way?
+- Are there shelters in case of bad weather?
+- What are the contact details and opening hours?
+
+**Without osm_finder:** You'd manually zoom through a map, searching each area, writing down info, and noting distances. Time-consuming and error-prone.
+
+**With osm_finder:** Run a single command and get everything in seconds!
+
+### Step-by-Step Example
+
+**1. Prepare your GPX file**
+Download or create your route in an app like [GPX Studio](https://gpx.studio/) and save it as `my_bikepacking_route.gpx`
+
+**2. Run osm_finder**
+```bash
+python3 main.py \
+  --gpx-file my_bikepacking_route.gpx \
+  --preset camp_basic \
+  --include amenity=drinking_water \
+  --include amenity=shelter \
+  --project-name BikepackingTour2025
+```
+
+**What each option does:**
+- `--gpx-file` - Path to your route
+- `--preset camp_basic` - Search for campsites that allow tents (excludes those without tents)
+- `--include amenity=drinking_water` - Also find drinking water sources
+- `--include amenity=shelter` - Also find emergency shelters
+- `--project-name` - Name your results (used for output file names)
+
+**3. Tool automatically:**
+1. Loads your GPX track
+2. Divides it into segments (every ~3 km by default)
+3. Searches a 5 km radius around each segment for:
+   - Campsites that allow tents (`tourism=camp_site` without `tents=no`)
+   - Drinking water sources (`amenity=drinking_water`)
+   - Shelters (`amenity=shelter`)
+4. Queries OpenStreetMap via Overpass API (combined into efficient batches)
+5. Calculates exact distances using geodesic measurements
+
+**4. Open your results**
+
+Two files are created in `./output/`:
+
+**Excel File** (`BikepackingTour2025_20250118_103041.xlsx`):
+```
+Name | Kilometers from start | Distance from track (km) | Matching Filter | Website | Phone | Opening hours
+-----|-----|-----|-----|-----|-----|-----
+Mountain View Campground | 12.5 | 0.8 | tourism=camp_site | www.mountain.com | +1-555-0123 | 24/7
+Spring Water Source | 18.3 | 1.2 | amenity=drinking_water | | | 
+Emergency Shelter #42 | 25.6 | 2.1 | amenity=shelter | | |
+```
+
+**Interactive Map** (`BikepackingTour2025_20250118_103041.html`):
+- Your route shown as a blue line
+- Red markers = Campsites (Filter 1)
+- Orange markers = Drinking water (Filter 2)
+- Purple markers = Shelters (Filter 3)
+- Click markers to see details
+- Use "Locate" button to see your current position
+
+**5. Plan your tour**
+Use the Excel file to:
+- Identify daily stages (distance between campsites)
+- Note amenities at each location
+- Call ahead if you have questions
+- Create a backup plan for bad weather (use shelters)
+
+Use the map to:
+- Visualize distances visually
+- Find the closest options
+- Scout routes on mobile
+
+### Result
+You now have a complete guide for your trip, all generated automatically from real OpenStreetMap data!
 
 ## Installation
 ### Clone the repository
@@ -120,13 +210,12 @@ presets_file: "presets.yaml"
 ```
 
 **What this config does:**
-- This example configuration searches for camping sites (excluding those without tent options) within 5 km of your GPX track.
-- The GPX file is expected at `./input/track.gpx`.
-- It generates an Excel file with a "Matching Filter" column and an interactive map.
-- Markers on the map are colored by filter: camping sites get the first color in the palette (red), any second filter would be orange, etc.
-- Results are saved to `./output/` as `MyProject_<date>_<timestamp>.xlsx` and `MyProject_<date>_<timestamp>.html`. 
-- The map starts at zoom level 10 with a blue track line and markers color-coded by distance: green for locations within 2 km, orange for 2-5 km, and red for locations farther away. 
-- Results are saved to `./output/`.
+- Searches for camping sites (excluding those without tent options) within 5 km of your GPX track
+- Expects GPX file at `./input/track.gpx`
+- Generates Excel file with "Matching Filter" column showing which filter matched each result
+- Colors markers on map by filter rank: camping sites get red (Filter 1), any second filter gets orange, etc.
+- Saves results to `./output/` as `MyProject_<date>_<timestamp>.xlsx` and `MyProject_<date>_<timestamp>.html`
+- Map starts at zoom level 10 with blue track line
 
 ## Presets
 
