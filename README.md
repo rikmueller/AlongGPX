@@ -122,28 +122,46 @@ The file `presets.yaml` contains predefined filter profiles.
 presets:
   camp_basic:
     include:
-      - tourism=camp_site
+      - "tourism=camp_site"
     exclude:
-      - tents=no
-      - camp_site:tent=no
+      - "tents=no"
+      - "camp_site:tent=no"
 
   camp_and_caravan:
     include:
-      - tourism=camp_site
-      - tourism=caravan_site
+      - "tourism=camp_site"
+      - "tourism=caravan_site"
+    exclude:
+      - "tents=no"
+
+  wild_camping_spots:
+    include:
+      - "camp_site=wild"
 
   shelters:
     include:
-      - amenity=shelter
+      - "amenity=shelter"
+
+  hotel:
+    include:
+      - "tourism=hotel"
+
+  accommodation:
+    include:
+      - "tourism=hotel"
+      - "tourism=guest_house"
+      - "tourism=bed_and_breakfast"
 
   drinking_water:
     include:
-      - amenity=drinking_water
+      - "amenity=drinking_water"
 ```
 
 ## Usage
 
 > **Note for Windows users:** Replace `python3` with `python` in all commands below.
+
+> **Important:** When using `--preset`, `--include`, or `--exclude` arguments, the default filters from `config.yaml` are ignored. Only the filters you specify via CLI arguments will be used.
 
 Run with default configuration:
 ```bash

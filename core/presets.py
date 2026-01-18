@@ -34,13 +34,18 @@ def apply_presets_to_filters(
 ):
     """
     Combine:
-    - Base filters from config.yaml
+    - Base filters from config.yaml (only if no CLI args provided)
     - Presets from presets.yaml
     - Additional CLI filters
     and validate the syntax.
     """
-    include = list(base_include or [])
-    exclude = list(base_exclude or [])
+    # Only use base filters if NO CLI arguments are provided
+    if preset_names or cli_include or cli_exclude:
+        include = []
+        exclude = []
+    else:
+        include = list(base_include or [])
+        exclude = list(base_exclude or [])
 
     # Apply presets
     if preset_names:
