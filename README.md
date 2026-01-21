@@ -1,11 +1,11 @@
-# whats-along-my-track
+# AlongGPX
 
-whats-along-my-track is a modular Python tool that analyzes OpenStreetMap POIs along a GPX track.  
+AlongGPX is a modular Python tool that analyzes OpenStreetMap POIs along a GPX track.  
 It combines GPX processing, Overpass API queries, flexible OSM filters, Excel export, and interactive Folium maps.
 
 ## Use Case
 
-You have a GPX track (from your GPS device, mapping app, or drawn on a map). You want to find specific amenities, services, or landmarks near your planned route. Instead of manually searching the map for each area, whats-along-my-track automatically finds everything for you and creates:
+You have a GPX track (from your GPS device, mapping app, or drawn on a map). You want to find specific amenities, services, or landmarks near your planned route. Instead of manually searching the map for each area, AlongGPX automatically finds everything for you and creates:
 - An Excel spreadsheet with details (name, contact info, distance from track, etc.)
 - An interactive map showing all results with color-coded markers
 
@@ -31,16 +31,16 @@ You're planning a 5-day bikepacking tour through a region you've never visited. 
 - Are there shelters in case of bad weather?
 - What are the contact details and opening hours?
 
-**Without whats-along-my-track:** You'd manually zoom through a map, searching each area, writing down info, and noting distances. Time-consuming and error-prone.
+**Without AlongGPX:** You'd manually zoom through a map, searching each area, writing down info, and noting distances. Time-consuming and error-prone.
 
-**With whats-along-my-track:** Run a single command and get everything in seconds!
+**With AlongGPX:** Run a single command and get everything in seconds!
 
 ### Step-by-Step Example
 
 **1. Prepare your GPX file**
 Download or create your route in an app like [GPX Studio](https://gpx.studio/) and save it as `my_bikepacking_route.gpx`
 
-**2. Run whats-along-my-track**
+**2. Run AlongGPX**
 ```bash
 python3 main.py \
   --gpx-file my_bikepacking_route.gpx \
@@ -92,8 +92,8 @@ You now have a complete guide for your trip, all generated automatically from re
 ## Installation
 ### Clone the repository
 ```bash
-git clone https://github.com/rikmueller/whats-along-my-track.git
-cd whats-along-my-track
+git clone https://github.com/rikmueller/AlongGPX.git
+cd AlongGPX
 ```
 
 ### Create a virtual environment
@@ -101,14 +101,14 @@ It's recommended to use a Python virtual environment to avoid conflicts with sys
 
 **On Linux/macOS:**
 ```bash
-python3 -m venv venv_wamt
-source venv_wamt/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 ```
 
 **On Windows:**
 ```bash
-python -m venv venv_wamt
-venv_wamt\Scripts\activate
+python -m venv venv
+venv\Scripts\activate
 ```
 
 > **Troubleshooting on Windows:** If you get an execution policy error, run this command in PowerShell:
@@ -117,7 +117,7 @@ venv_wamt\Scripts\activate
 > ```
 > Then try activating the virtual environment again.
 
-Your prompt should now show `(venv_wamt)` at the beginning, indicating the virtual environment is active.
+Your prompt should now show `(venv)` at the beginning, indicating the virtual environment is active.
 
 ### Install dependencies
 ```bash
@@ -228,7 +228,7 @@ Presets are predefined filter profiles stored in `presets.yaml` that combine mul
 
 ### Available presets
 
-For a complete list of available presets and how to create your own, see the [Presets documentation on the Wiki](https://github.com/rikmueller/whats-along-my-track/wiki).
+For a complete list of available presets and how to create your own, see the [Presets documentation on the Wiki](https://github.com/rikmueller/AlongGPX/wiki).
 
 ## Usage
 
@@ -288,7 +288,7 @@ Pull requests are welcome. Please open an issue if you find bugs or want to requ
 
 ## Credits
 
-whats-along-my-track stands on the shoulders of great open-source projects:
+AlongGPX stands on the shoulders of great open-source projects:
 
 - **[OpenStreetMap](https://www.openstreetmap.org/)** - The collaborative mapping platform providing the data
 - **[Overpass API](https://overpass-api.de/)** - Powerful API for querying OpenStreetMap data
