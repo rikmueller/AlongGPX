@@ -26,7 +26,7 @@ This guide covers setting up and running the new web frontend.
 cd /home/rik/AlongGPX
 
 # First time: install web dependencies
-pip install -r docker/requirements-web.txt
+pip install -r backend/requirements.txt
 
 # Start Flask
 python3 backend/app.py
@@ -202,7 +202,7 @@ Poll job progress.
 ## Troubleshooting
 
 ### "ModuleNotFoundError" (Local Flask)
-1. Install web dependencies: `pip install -r docker/requirements-web.txt`
+1. Install web dependencies: `pip install -r backend/requirements.txt`
 2. For CLI-only: `pip install -r cli/requirements-cli.txt`
 
 ### "Can't connect to API" (Frontend)
@@ -218,7 +218,7 @@ Poll job progress.
 ### "Job stuck in processing"
 1. Check Flask logs for errors: `docker-compose logs -f app`
 2. Large GPX files or dense regions may take time
-3. Increase `batch_km` in `config.yaml` to speed up Overpass queries
+3. Increase `batch_km` in `config/config.yaml` to speed up Overpass queries
 
 ### Docker build fails
 1. Ensure Node.js 18+ and Python 3.10+: `node -v`, `python3 --version`

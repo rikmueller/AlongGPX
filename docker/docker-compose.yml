@@ -18,7 +18,7 @@ services:
       # Output directory for Excel and HTML results
       - ../data/output:/app/data/output:rw
       # Optional: mount config.yaml to override at runtime
-      - ../config.yaml:/app/config.yaml:ro
+      - ../config/config.yaml:/app/config/config.yaml:ro
     restart: unless-stopped
     networks:
       - alonggpx-network

@@ -9,18 +9,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy web requirements only (deps are inlined)
-COPY docker/requirements-web.txt requirements-web.txt
+# Copy backend requirements
+COPY backend/requirements.txt requirements.txt
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements-web.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code (from build context root)
 COPY core ./core
 COPY cli ./cli
 COPY backend ./backend
-COPY config.yaml ./config.yaml
-COPY presets.yaml ./presets.yaml
+COPY config ./config
 
 # Create data directories with proper permissions
 RUN mkdir -p /app/data/input /app/data/output && chmod 777 /app/data/output

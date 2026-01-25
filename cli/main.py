@@ -46,7 +46,7 @@ def run_pipeline(
     
     # Load presets
     presets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
-                                config.get("presets_file", "presets.yaml"))
+                                "config", config.get("presets_file", "presets.yaml"))
     presets = load_presets(presets_path)
 
     # Apply presets to include/exclude
@@ -125,7 +125,7 @@ def main():
     # If config path is default (not overridden), resolve it relative to repo root
     if args.config == "config.yaml":
         repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        args.config = os.path.join(repo_root, "config.yaml")
+        args.config = os.path.join(repo_root, "config", "config.yaml")
 
     # Merge configuration from YAML + CLI
     config = load_and_merge_config(args.config, args)

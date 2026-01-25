@@ -60,7 +60,7 @@ Results are saved to `../data/output/`.
 
 ## Configuration
 
-By default, the container uses `../config.yaml` (auto-mounted from repo root). For most setups, no extra configuration is required.
+By default, the container uses `../config/config.yaml` (auto-mounted from repo root). For most setups, no extra configuration is required.
 
 - Precedence: Web API form parameters > environment variables (optional) > `config.yaml` defaults
 - Volume mounts: `../data/input` (read-only), `../data/output` (read-write)
@@ -165,6 +165,6 @@ server {
 - Volume mounts: `../data/input:ro`, `../data/output:rw`
 
 ## Next Steps
-- Adjust defaults in `config.yaml`
+- Adjust defaults in `config/config.yaml`
 - Explore or add presets in `presets.yaml`
 

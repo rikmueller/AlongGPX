@@ -231,7 +231,7 @@ docker-compose up
 ### Job stuck in "processing"
 - Check Flask logs: `docker-compose logs -f app`
 - Long-running Overpass queries or dense regions slow things down
-- Increase `batch_km` in config.yaml to reduce API calls
+- Increase `batch_km` in `config/config.yaml` to reduce API calls
 
 ## Future Enhancements
 

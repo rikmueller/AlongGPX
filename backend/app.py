@@ -123,9 +123,9 @@ def health_check():
 @app.route('/api/config', methods=['GET'])
 def get_config():
     try:
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml')
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'config.yaml')
         config = load_yaml_config(config_path)
-        presets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'presets.yaml')
+        presets_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'presets.yaml')
         presets = load_presets(presets_path)
         return jsonify({
             'defaults': {
@@ -169,7 +169,7 @@ def process_gpx():
         temp_gpx_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(temp_gpx_path)
         logger.info(f"Processing GPX: {temp_gpx_path}")
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml')
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'config.yaml')
         config = load_yaml_config(config_path)
         env_cfg = load_env_config()
         config = merge_env_into_config(config, env_cfg)
@@ -204,7 +204,7 @@ def process_gpx():
 @app.route('/api/download/excel/<filename>', methods=['GET'])
 def download_excel(filename):
     try:
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml')
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'config.yaml')
         cfg = load_yaml_config(config_path)
         env_cfg = load_env_config()
         cfg = merge_env_into_config(cfg, env_cfg)
@@ -222,7 +222,7 @@ def download_excel(filename):
 @app.route('/api/download/html/<filename>', methods=['GET'])
 def download_html(filename):
     try:
-        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yaml')
+        config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config', 'config.yaml')
         cfg = load_yaml_config(config_path)
         env_cfg = load_env_config()
         cfg = merge_env_into_config(cfg, env_cfg)

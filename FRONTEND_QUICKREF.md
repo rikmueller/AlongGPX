@@ -94,7 +94,7 @@ docs/
 └── FRONTEND.md               NEW - Dev guide
 
 IMPLEMENTATION_NOTES.md       NEW - Technical summary
-verify_implementation.sh      NEW - Verification script
+verify_implementation.sh      NEW - Verification script (in scripts/)
 test_api.py                   NEW - API tests (skeleton)
 ```
 
@@ -125,7 +125,7 @@ test_api.py                   NEW - API tests (skeleton)
 
 All files are in place and verified:
 ```bash
-bash verify_implementation.sh
+bash scripts/verify_implementation.sh
 ```
 
 Output: ✅ All checks passed!
