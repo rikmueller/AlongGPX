@@ -1,4 +1,5 @@
 import os
+import json
 import folium
 from folium.plugins import LocateControl
 from datetime import datetime
@@ -10,8 +11,8 @@ def build_folium_map(
     output_path: str,
     project_name: str,
     map_cfg: dict,
-    include_filters: list = None,
-    timestamp: str = None,
+    include_filters: list | None = None,
+    timestamp: str | None = None,
 ) -> str:
     """
     Generate a Folium map with track and markers.
@@ -59,7 +60,90 @@ def build_folium_map(
         ).add_to(m)
 
     # Add locate control button
-    LocateControl(position='topleft').add_to(m)
+    LocateControl(position="topleft").add_to(m)
+
+    # Add recenter control to fit track bounds (when track exists)
+    track_latlon = [[lat, lon] for lon, lat in track_points] if track_points else []
+    recenter_style = """
+    <style>
+        .leaflet-bar.folium-recenter-control {
+            border-radius: 4px;
+        }
+        .leaflet-bar.folium-recenter-control a {
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            background: #fff;
+            border: 1px solid #ccc;
+            font-size: 18px;
+        }
+        .leaflet-bar.folium-recenter-control a:first-child {
+            border-radius: 4px 4px 0 0;
+        }
+        .leaflet-bar.folium-recenter-control a:last-child {
+            border-radius: 0 0 4px 4px;
+            border-top: none;
+        }
+        .leaflet-bar.folium-recenter-control a:hover {
+            background: #f5f5f5;
+        }
+        .leaflet-bar.folium-recenter-control a.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f9fafb;
+        }
+    </style>
+    """
+
+    recenter_script = f"""
+    <script>
+        (function() {{
+            var track = {json.dumps(track_latlon)};
+            var mapName = "{m.get_name()}";
+            var attempts = 0;
+            function attach() {{
+                var map = window[mapName];
+                if (!map) {{
+                    if (attempts++ < 50) return setTimeout(attach, 100);
+                    return;
+                }}
+                
+                var control = L.control({{ position: 'topleft' }});
+                control.onAdd = function() {{
+                    var container = L.DomUtil.create('div', 'leaflet-bar folium-recenter-control');
+                    var link = L.DomUtil.create('a', '', container);
+                    link.href = '#';
+                    link.title = track.length ? 'Recenter to track' : 'Load a track to recenter';
+                    link.setAttribute('role', 'button');
+                    link.setAttribute('aria-label', link.title);
+                    link.innerHTML = '\\u27f2';
+                    if (!track.length) {{
+                        link.classList.add('disabled');
+                    }}
+                    
+                    L.DomEvent.disableClickPropagation(link);
+                    L.DomEvent.on(link, 'click', function (e) {{
+                        L.DomEvent.preventDefault(e);
+                        if (!track.length) return;
+                        var bounds = L.latLngBounds(track.map(function(p) {{ return [p[0], p[1]]; }}));
+                        map.fitBounds(bounds, {{ padding: [24, 24] }});
+                    }});
+                    
+                    return container;
+                }};
+                control.addTo(map);
+            }}
+            attach();
+        }})();
+    </script>
+    """
+
+    m.get_root().html.add_child(folium.Element(recenter_style))
+    m.get_root().html.add_child(folium.Element(recenter_script))
 
     # Overlays for track and POIs so they appear in the layer control
     track_group = folium.FeatureGroup(name="Track", overlay=True, show=True)
@@ -75,7 +159,7 @@ def build_folium_map(
     # Get color palette and create filter-to-color mapping by rank
     color_palette = map_cfg.get("marker_color_palette", ["red", "orange", "purple", "green", "blue"])
     default_color = map_cfg.get("default_marker_color", "gray")
-    
+
     filter_to_color = {}
     if include_filters:
         for idx, filt in enumerate(include_filters):
@@ -93,7 +177,6 @@ def build_folium_map(
         <b>Opening hours:</b> {row['Opening hours']}
         """
 
-        # Get color based on filter rank
         matching_filter = row.get("Matching Filter", "")
         color = filter_to_color.get(matching_filter, default_color)
 
