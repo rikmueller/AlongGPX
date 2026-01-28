@@ -317,21 +317,8 @@ function TileSelector({ tileOptions, value, onChange }: { tileOptions: TileSourc
 export default function InteractiveMap({ track, pois, tileSource, tileOptions, onTileChange }: Props) {
   const [initialCenter, setInitialCenter] = useState<[number, number]>([49.0069, 8.4037]) // fallback Karlsruhe
 
-  // Try to get user's location on mount
-  useEffect(() => {
-    if (!track.length && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setInitialCenter([position.coords.latitude, position.coords.longitude])
-        },
-        (error) => {
-          // Silently fail and use Karlsruhe fallback
-          console.debug('Geolocation not available:', error.message)
-        },
-        { timeout: 5000, maximumAge: 60000 }
-      )
-    }
-  }, [track.length])
+  // Automatic geolocation detection disabled to prevent browser popup
+  // Users can still manually click the locate button on the map if desired
 
   const polylineCoords = useMemo(() => track.map(([lon, lat]) => [lat, lon]), [track])
 
