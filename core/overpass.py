@@ -39,14 +39,6 @@ def build_overpass_query_batch(points, radius_km, include_filters):
     return query
 
 
-def build_overpass_query(lon, lat, radius_km, include_filters):
-    """
-    Build an Overpass query with dynamic include filters (single point).
-    Deprecated: Use build_overpass_query_batch for better performance.
-    """
-    return build_overpass_query_batch([(lon, lat)], radius_km, include_filters)
-
-
 def query_overpass_with_retries(query: str, overpass_cfg: dict):
     """
     Execute an Overpass query with multiple servers and retries.
