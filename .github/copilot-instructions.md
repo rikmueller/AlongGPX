@@ -11,14 +11,14 @@ AlongGPX finds OpenStreetMap POIs along GPX tracks using Overpass API queries, t
 ## Architecture & Data Flow
 
 ### Backend Pipeline (Shared by all interfaces)
-Located in `core/` directory - reusable modules called by CLI and web API:
+Located in `backend/core/` directory - reusable modules called by CLI and web API:
 
-1. **Config**: YAML defaults + env vars + runtime args → merged config ([config.py](../core/config.py))
-2. **Presets**: Load [config/presets.yaml](../config/presets.yaml) → apply to filters ([presets.py](../core/presets.py))
-3. **GPX**: Parse GPX → geodesic distance calculations with `pyproj.Geod(ellps="WGS84")` ([gpx_processing.py](../core/gpx_processing.py))
-4. **Overpass**: Batched queries along track with configurable `batch_km` ([overpass.py](../core/overpass.py))
-5. **Filter**: Include/exclude OSM tags → geodesic distance to track ([filtering.py](../core/filtering.py))
-6. **Export**: DataFrame → Excel + Folium map with color-coded markers ([export.py](../core/export.py), [folium_map.py](../core/folium_map.py))
+1. **Config**: YAML defaults + env vars + runtime args → merged config ([config.py](../backend/core/config.py))
+2. **Presets**: Load [data/presets.yaml](../data/presets.yaml) → apply to filters ([presets.py](../backend/core/presets.py))
+3. **GPX**: Parse GPX → geodesic distance calculations with `pyproj.Geod(ellps="WGS84")` ([gpx_processing.py](../backend/core/gpx_processing.py))
+4. **Overpass**: Batched queries along track with configurable `batch_km` ([overpass.py](../backend/core/overpass.py))
+5. **Filter**: Include/exclude OSM tags → geodesic distance to track ([filtering.py](../backend/core/filtering.py))
+6. **Export**: DataFrame → Excel + Folium map with color-coded markers ([export.py](../backend/core/export.py), [folium_map.py](../backend/core/folium_map.py))
 
 Entry point: `cli.main.run_pipeline()` - returns dict with paths and metadata
 
@@ -26,15 +26,15 @@ Entry point: `cli.main.run_pipeline()` - returns dict with paths and metadata
 Modern map-first single-page application with continuous visual feedback:
 
 **Core Files:**
-- [web/src/DevApp.tsx](../web/src/DevApp.tsx) - Main orchestrator (stage management: idle → uploaded → processing → completed/error)
-- [web/src/api.ts](../web/src/api.ts) - Typed API client with axios
-- [web/src/components/](../web/src/components/) - Reusable UI components
-- [web/src/hooks/](../web/src/hooks/) - Custom React hooks
+- [frontend/src/DevApp.tsx](../frontend/src/DevApp.tsx) - Main orchestrator (stage management: idle → uploaded → processing → completed/error)
+- [frontend/src/api.ts](../frontend/src/api.ts) - Typed API client with axios
+- [frontend/src/components/](../frontend/src/components/) - Reusable UI components
+- [frontend/src/hooks/](../frontend/src/hooks/) - Custom React hooks
 
 **Key Components:**
-- `DevHeader` - Glassmorphic header with branding and modern styling
+- `BrandingHeader` - Glassmorphic header with branding and modern styling
 - `SettingsSheet` - Collapsible settings sidebar (mobile-responsive with smooth animations)
-- `InteractiveDevMap` - React-Leaflet map with instant GPX visualization and live POI updates
+- `InteractiveMap` - React-Leaflet map with instant GPX visualization and live POI updates
 - `PresetSelectionModal` - Category-organized preset selection (Camping, Accommodation, Food, etc.)
 - `FilterSelectionModal` - Custom OSM filter builder (key=value format)
 - `Modal` - Reusable modal base component with backdrop and animations
@@ -59,7 +59,7 @@ Completed → interactive map with all results + download buttons
 - **Tile persistence**: User's preferred map layer saved to localStorage
 
 ### REST API (Flask + SocketIO)
-Located in [backend/app.py](../backend/app.py) - async job processing with polling:
+Located in [backend/api/app.py](../backend/api/app.py) - async job processing with polling:
 
 **Endpoints:**
 - `GET /health` - Health check
@@ -79,9 +79,9 @@ Real-time updates enabled if SocketIO initialization succeeds, graceful fallback
 
 ### Key Design Decisions
 - **WGS84 geodesic**: All distance calculations use `pyproj.Geod` for accuracy (not Euclidean)
-- **Batching**: Multiple search circles combined per Overpass call (controlled by `config/config.yaml:overpass.batch_km`)
+- **Batching**: Multiple search circles combined per Overpass call (controlled by `ALONGGPX_BATCH_KM` environment variable)
 - **Auto step_km**: Defaults to 60% of `radius_km` if not set
-- **Filter precedence**: CLI/API args override `config.yaml` base filters entirely (not additive)
+- **Filter precedence**: CLI/API args override environment variable defaults entirely (not additive)
 - **Reusable pipeline**: `cli.main.run_pipeline()` callable from CLI or web backend
 - **Async processing**: Web API runs pipeline in background threads, returns immediately with job ID
 - **GeoJSON export**: POIs + track converted to GeoJSON for modern map rendering
@@ -94,21 +94,21 @@ AlongGPX/
 ├── cli/                         # Command-line interface
 │   ├── main.py                 # CLI entry + run_pipeline() export
 │   └── requirements-cli.txt    # CLI-specific deps
-├── core/                        # Shared pipeline (DRY - used by CLI & web)
-│   ├── __init__.py
-│   ├── cli.py                  # Argument parsing
-│   ├── config.py               # YAML + env var + runtime merging
-│   ├── presets.py              # Filter preset loading/validation
-│   ├── gpx_processing.py       # GPX parsing & geodesic metrics
-│   ├── overpass.py             # Batched Overpass API queries
-│   ├── filtering.py            # Result filtering & distance calc
-│   ├── export.py               # Excel export
-│   └── folium_map.py           # Folium map generation
-├── backend/                     # Flask REST API
-│   ├── app.py                  # Flask + SocketIO, job registry, endpoints
-│   ├── requirements.txt        # Flask + dependencies
-│   └── test_api.py             # API test script
-├── web/                         # React frontend
+├── backend/                     # Backend services
+│   ├── api/                    # Flask REST API
+│   │   ├── app.py              # Flask + SocketIO, job registry, endpoints
+│   │   └── requirements.txt    # Flask + dependencies
+│   └── core/                   # Shared pipeline (DRY - used by CLI & web)
+│       ├── __init__.py
+│       ├── cli.py              # Argument parsing
+│       ├── config.py           # YAML + env var + runtime merging
+│       ├── presets.py          # Filter preset loading/validation
+│       ├── gpx_processing.py   # GPX parsing & geodesic metrics
+│       ├── overpass.py         # Batched Overpass API queries
+│       ├── filtering.py        # Result filtering & distance calc
+│       ├── export.py           # Excel export
+│       └── folium_map.py       # Folium map generation
+├── frontend/                    # React frontend
 │   ├── src/
 │   │   ├── DevApp.tsx          # Main application
 │   │   ├── DevApp.css          # Dark theme styles
@@ -116,9 +116,9 @@ AlongGPX/
 │   │   ├── main.tsx            # React Router entry point
 │   │   ├── index.css           # Design system
 │   │   ├── components/         # UI components
-│   │   │   ├── DevHeader.tsx
+│   │   │   ├── BrandingHeader.tsx
 │   │   │   ├── SettingsSheet.tsx
-│   │   │   ├── InteractiveDevMap.tsx  # React-Leaflet map
+│   │   │   ├── InteractiveMap.tsx  # React-Leaflet map
 │   │   │   ├── PresetSelectionModal.tsx
 │   │   │   ├── FilterSelectionModal.tsx
 │   │   │   └── Modal.tsx         # Base modal component
@@ -127,21 +127,18 @@ AlongGPX/
 │   ├── Dockerfile              # Frontend production build
 │   ├── vite.config.ts          # Vite build config
 │   └── package.json            # React, axios, leaflet, socket.io-client
-├── docker/                      # Production deployment
+├── deployment/                  # Production deployment
 │   ├── docker-compose.yml      # Nginx + Flask backend
 │   ├── docker-compose.dev.yml  # Dev mode (hot reload)
 │   ├── Dockerfile              # Backend container
 │   ├── Dockerfile.nginx        # Nginx + frontend static files
 │   └── nginx.conf              # Reverse proxy config
-├── config/                      # Shared configuration
-│   ├── config.yaml             # Defaults (paths, radius, Overpass servers)
+├── data/                        # Configuration and files
 │   ├── presets.yaml            # Filter presets (camp_basic, drinking_water, etc.)
-│   └── .env.example            # Environment variable template
-├── data/
 │   ├── input/                  # GPX files (mounted in Docker)
 │   └── output/                 # Generated Excel/HTML (timestamped)
 ├── docs/                        # Documentation
-│   ├── QUICKSTART-FRONTEND.md  # Web UI setup & deployment
+│   ├── quickstart-dev.md       # Development setup & workflows
 │   ├── quickstart-cli.md       # CLI setup
 │   ├── quickstart-docker.md    # Docker setup
 │   ├── FRONTEND.md             # Frontend architecture deep-dive
@@ -155,13 +152,13 @@ AlongGPX/
 ### Filter System (`key=value`)
 - **Include filters**: OSM tags to search for (e.g., `tourism=camp_site`)
 - **Exclude filters**: Remove matches (e.g., `tents=no`)
-- Validated in [presets.py](../core/presets.py):`validate_filter_syntax()`
-- Matching logic: First matching include filter becomes `Matching Filter` column ([filtering.py](../core/filtering.py))
+- Validated in [presets.py](../backend/core/presets.py):`validate_filter_syntax()`
+- Matching logic: First matching include filter becomes `Matching Filter` column ([filtering.py](../backend/core/filtering.py))
 - **Filter colors**: Web UI assigns colors by filter rank (1st=red, 2nd=orange, 3rd=purple, etc.)
 
 ### Coordinate Format
 - **Internal (Python)**: Always `(lon, lat)` tuples
-- **Folium/display**: Reversed to `[lat, lon]` (see [folium_map.py](../core/folium_map.py))
+- **Folium/display**: Reversed to `[lat, lon]` (see [folium_map.py](../backend/core/folium_map.py))
 - **GeoJSON**: Standard format `[lon, lat]` (used by React-Leaflet)
 
 ### Distance Calculations
@@ -176,8 +173,8 @@ track_line = LineString(track_points_m)  # EPSG:3857
 ```
 
 ### Frontend TypeScript Conventions
-- **Typed API client**: All responses typed in [api.ts](../web/src/api.ts)
-- **CSS Modules pattern**: Each component has corresponding `.css` file (e.g., `DevHeader.tsx` + `DevHeader.css`)
+- **Typed API client**: All responses typed in [api.ts](../frontend/src/api.ts)
+- **CSS Modules pattern**: Each component has corresponding `.css` file (e.g., `BrandingHeader.tsx` + `BrandingHeader.css`)
 - **Dark theme**: DevApp uses dark color scheme with glassmorphic effects
 - **No heavy UI libraries**: Custom CSS with design system (CSS variables in index.css)
 - **Error boundaries**: Top-level error handling in DevApp.tsx
@@ -189,9 +186,9 @@ track_line = LineString(track_points_m)  # EPSG:3857
 
 1. **Runtime arguments** (CLI flags or API form parameters)
 2. **Environment variables** (e.g., `ALONGGPX_RADIUS_KM=5`)
-3. **config.yaml defaults** ([config/config.yaml](../config/config.yaml))
+3. **Built-in defaults** (hardcoded in backend/core/config.py)
 
-**Important**: When ANY CLI/API filter args provided (`preset`, `include`, `exclude`), `config.yaml:search.include/exclude` are completely ignored (not merged) - see [presets.py](../core/presets.py).
+**Important**: When ANY CLI/API filter args provided (`preset`, `include`, `exclude`), environment variable defaults are completely ignored (not merged) - see [presets.py](../backend/core/presets.py).
 
 ## Development Workflows
 
@@ -199,11 +196,11 @@ track_line = LineString(track_points_m)  # EPSG:3857
 ```bash
 # Terminal 1: Backend (Flask)
 cd /home/rik/AlongGPX
-python3 backend/app.py
+python3 backend/api/app.py
 # Runs on http://localhost:5000
 
 # Terminal 2: Frontend (Vite dev server)
-cd web
+cd frontend
 npm install
 npm run dev
 # Runs on http://localhost:3000 with HMR
@@ -230,7 +227,7 @@ python3 cli/main.py
 
 ### Docker Production Mode
 ```bash
-cd docker
+cd deployment
 docker-compose up -d           # Nginx + Flask backend
 curl http://localhost:3000     # Frontend served by Nginx
 curl http://localhost:3000/api/health  # API via reverse proxy
@@ -238,14 +235,14 @@ curl http://localhost:3000/api/health  # API via reverse proxy
 
 ### Docker Development Mode
 ```bash
-cd docker
+cd deployment
 docker-compose -f docker-compose.dev.yml up
 # Frontend with hot reload on http://localhost:3000
 ```
 
 ### Frontend Development (Standalone)
 ```bash
-cd web
+cd frontend
 npm run dev          # Dev server with HMR
 npm run build        # Production build to dist/
 npm run preview      # Preview production build
@@ -257,13 +254,13 @@ npm run preview      # Preview production build
   - CLI: Run with `./data/input/track.gpx` → verify Excel columns + map markers
   - Web: Upload GPX → verify progress updates → check downloads
 - **Logs**: 
-  - Backend: `python3 backend/app.py` shows Flask logs
+  - Backend: `python3 backend/api/app.py` shows Flask logs
   - Frontend: Browser console shows API calls
-  - Docker: `docker-compose logs -f` from docker/ directory
+  - Docker: `docker-compose logs -f` from deployment/ directory
 - **Check batching**: Look for log `Querying X.Xkm track with Y batched Overpass calls`
 
 ### Adding New Presets
-Edit [config/presets.yaml](../config/presets.yaml):
+Edit [data/presets.yaml](../data/presets.yaml):
 ```yaml
 my_preset:
   name: "My Custom Preset"
@@ -282,29 +279,29 @@ my_preset:
 - API: `curl -F "preset=my_preset" ...`
 
 ### Adding New API Endpoints
-1. Add route in [backend/app.py](../backend/app.py)
-2. Update TypeScript types in [web/src/api.ts](../web/src/api.ts)
+1. Add route in [backend/api/app.py](../backend/api/app.py)
+2. Update TypeScript types in [frontend/src/api.ts](../frontend/src/api.ts)
 3. Add client method to `apiClient` object
 4. Use in components via `apiClient.newMethod()`
 
 ### Adding New UI Components
-1. Create `Component.tsx` and `Component.css` in [web/src/components/](../web/src/components/)
-2. Import in [App.tsx](../web/src/App.tsx) or other parent
+1. Create `Component.tsx` and `Component.css` in [frontend/src/components/](../frontend/src/components/)
+2. Import in [App.tsx](../frontend/src/App.tsx) or other parent
 3. Follow naming convention: PascalCase for component, camelCase for props
-4. Use CSS variables from [index.css](../web/src/index.css) design system
+4. Use CSS variables from [index.css](../frontend/src/index.css) design system
 
 ## Common Gotchas
 
 1. **Filter order matters**: Marker colors assigned by include filter rank (1st=red, 2nd=orange, etc.)
-2. **Overpass timeouts**: Increase `batch_km` in config.yaml to reduce queries, or decrease for dense areas
+2. **Overpass timeouts**: Increase `ALONGGPX_BATCH_KM` environment variable to reduce queries, or decrease for dense areas
 3. **Empty results**: Check filter syntax (`key=value`), verify OSM data exists via [overpass-turbo.eu](https://overpass-turbo.eu/)
-4. **Duplicate POIs**: Deduplication by OSM ID in [overpass.py](../core/overpass.py)
+4. **Duplicate POIs**: Deduplication by OSM ID in [overpass.py](../backend/core/overpass.py)
 5. **CLI from wrong directory**: Always run `python3 cli/main.py` from repo root
 6. **Docker volume mounts**: Container expects `/app/data/input` and `/app/data/output`
-7. **CORS errors in dev**: Vite proxy configured in [vite.config.ts](../web/vite.config.ts) - API calls to `/api/*` proxied to Flask
+7. **CORS errors in dev**: Vite proxy configured in [vite.config.ts](../frontend/vite.config.ts) - API calls to `/api/*` proxied to Flask
 8. **SocketIO fallback**: If WebSocket fails, app automatically falls back to polling
 9. **Frontend env vars**: Must start with `VITE_` to be accessible in browser code
-10. **Config location**: CLI/backend expect config in `config/` directory (not root)
+10. **Config location**: CLI/backend expect config in `data/` directory (not root)
 
 ## External Dependencies
 
@@ -330,12 +327,12 @@ my_preset:
 - **lucide-react** - Icon library
 
 ### External Services
-- **Overpass API**: Multiple servers configured ([config/config.yaml](../config/config.yaml)), auto-retries with exponential backoff
+- **Overpass API**: Multiple servers configured via `ALONGGPX_OVERPASS_SERVERS` environment variable, auto-retries with exponential backoff
 - **OSM tag reference**: [wiki.openstreetmap.org/wiki/Map_features](https://wiki.openstreetmap.org/wiki/Map_features)
 
 ## Environment Variables
 
-### Shared (config/.env)
+### Shared (data/.env)
 ```
 ALONGGPX_PROJECT_NAME=MyProject
 ALONGGPX_OUTPUT_PATH=../data/output/
@@ -346,19 +343,19 @@ ALONGGPX_TIMEZONE=Europe/Berlin
 ALONGGPX_HOSTNAME=localhost  # For Vite HMR in Docker
 ```
 
-### Backend (backend/.env)
+### Backend (backend/api/.env)
 ```
 FLASK_ENV=development
 FLASK_PORT=5000
 ```
 
-### Frontend (web/.env.local)
+### Frontend (frontend/.env.local)
 ```
 VITE_API_BASE_URL=http://localhost:5000
 VITE_ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-### Docker (docker/.env)
+### Docker (deployment/.env)
 ```
 FLASK_ENV=production
 FLASK_PORT=5000
@@ -367,26 +364,26 @@ FLASK_PORT=5000
 ## File Organization by Role
 
 ### Backend Developer
-- **[backend/app.py](../backend/app.py)** - Add API endpoints here
-- **[core/](../core/)** - Modify pipeline logic (GPX, Overpass, filtering)
-- **[config/config.yaml](../config/config.yaml)** - Adjust defaults
+- **[backend/api/app.py](../backend/api/app.py)** - Add API endpoints here
+- **[backend/core/](../backend/core/)** - Modify pipeline logic (GPX, Overpass, filtering)
+- **[deployment/.env](../deployment/.env)** or **[deployment/docker-compose.yml](../deployment/docker-compose.yml)** - Adjust defaults
 
 ### Frontend Developer
-- **[web/src/DevApp.tsx](../web/src/DevApp.tsx)** - Main orchestration
-- **[web/src/components/](../web/src/components/)** - UI components
-- **[web/src/api.ts](../web/src/api.ts)** - API client
-- **[web/src/hooks/useWebSocket.ts](../web/src/hooks/useWebSocket.ts)** - Real-time hook
-- **[web/src/index.css](../web/src/index.css)** - Design system
+- **[frontend/src/DevApp.tsx](../frontend/src/DevApp.tsx)** - Main orchestration
+- **[frontend/src/components/](../frontend/src/components/)** - UI components
+- **[frontend/src/api.ts](../frontend/src/api.ts)** - API client
+- **[frontend/src/hooks/useWebSocket.ts](../frontend/src/hooks/useWebSocket.ts)** - Real-time hook
+- **[frontend/src/index.css](../frontend/src/index.css)** - Design system
 
 ### DevOps
-- **[docker/docker-compose.yml](../docker/docker-compose.yml)** - Production deployment
-- **[docker/nginx.conf](../docker/nginx.conf)** - Reverse proxy
-- **[docker/Dockerfile](../docker/Dockerfile)** - Backend image
-- **[docker/Dockerfile.nginx](../docker/Dockerfile.nginx)** - Frontend image
+- **[deployment/docker-compose.yml](../deployment/docker-compose.yml)** - Production deployment
+- **[deployment/nginx.conf](../deployment/nginx.conf)** - Reverse proxy
+- **[deployment/Dockerfile](../deployment/Dockerfile)** - Backend image
+- **[deployment/Dockerfile.nginx](../deployment/Dockerfile.nginx)** - Frontend image
 
 ### Data/Config
-- **[config/presets.yaml](../config/presets.yaml)** - Filter presets
-- **[config/config.yaml](../config/config.yaml)** - App defaults
+- **[data/presets.yaml](../data/presets.yaml)** - Filter presets
+- **[deployment/.env](../deployment/.env)** - Environment configuration
 - **[data/input/](../data/input/)** - GPX files
 - **[data/output/](../data/output/)** - Results (Excel, HTML, timestamped)
 
@@ -397,14 +394,13 @@ FLASK_PORT=5000
 import sys, os
 sys.path.insert(0, '/home/rik/AlongGPX')
 from cli.main import run_pipeline
-from core.config import load_yaml_config
 
-config = load_yaml_config('config/config.yaml')
-config['input']['gpx_file'] = 'data/input/track.gpx'
-config['search']['radius_km'] = 10
+# Configuration is loaded from environment variables
+# Set environment variables before running:
+# export ALONGGPX_RADIUS_KM=10
+# export ALONGGPX_GPX_FILE=data/input/track.gpx
 
 result = run_pipeline(
-    config, 
     cli_presets=['camp_basic'], 
     cli_include=['amenity=drinking_water'],
     cli_exclude=None
@@ -457,14 +453,14 @@ const geojson = await apiClient.getGeoJson(response.job_id)
 ### Single-User Local
 ```bash
 # Just run backend + frontend locally
-python3 backend/app.py &
-cd web && npm run dev
+python3 backend/api/app.py &
+cd frontend && npm run dev
 ```
 
 ### Multi-User Production
 ```bash
 # Docker with Nginx reverse proxy
-cd docker
+cd deployment
 docker-compose up -d
 # Access at http://server:3000
 ```
@@ -472,15 +468,15 @@ docker-compose up -d
 ### CI/CD Pipeline
 ```bash
 # Build images
-docker build -f docker/Dockerfile -t alonggpx-backend .
-docker build -f docker/Dockerfile.nginx -t alonggpx-frontend .
+docker build -f deployment/Dockerfile -t alonggpx-backend .
+docker build -f deployment/Dockerfile.nginx -t alonggpx-frontend .
 
 # Push to registry
 docker push yourregistry/alonggpx-backend
 docker push yourregistry/alonggpx-frontend
 
 # Deploy
-docker-compose -f docker/docker-compose.yml up -d
+docker-compose -f deployment/docker-compose.yml up -d
 ```
 
 ## Release & Git Workflow

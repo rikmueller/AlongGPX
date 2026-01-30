@@ -31,7 +31,7 @@ This document describes the new web frontend for AlongGPX and how it integrates 
 ## Frontend Structure
 
 ```
-web/
+frontend/
 ├── src/
 │   ├── main.tsx              # Entry point with React Router
 │   ├── DevApp.tsx            # Main app orchestrator
@@ -39,12 +39,12 @@ web/
 │   ├── index.css             # Global design system
 │   ├── api.ts                # API client & TypeScript types
 │   ├── components/
-│   │   ├── DevHeader.tsx         # Glassmorphic header with branding
-│   │   ├── DevHeader.css
+│   │   ├── BrandingHeader.tsx    # Glassmorphic header with branding
+│   │   ├── BrandingHeader.css
 │   │   ├── SettingsSheet.tsx     # Collapsible settings sidebar (mobile-responsive)
 │   │   ├── SettingsSheet.css
-│   │   ├── InteractiveDevMap.tsx # React-Leaflet map with custom markers
-│   │   ├── InteractiveDevMap.css
+│   │   ├── InteractiveMap.tsx    # React-Leaflet map with custom markers
+│   │   ├── InteractiveMap.css
 │   │   ├── PresetSelectionModal.tsx # Category-organized preset selection
 │   │   ├── PresetSelectionModal.css
 │   │   ├── FilterSelectionModal.tsx # Custom filter builder
@@ -187,13 +187,13 @@ The DevApp provides a **map-first interface** where users see their GPX track im
 **Terminal 1 - Backend:**
 ```bash
 cd /home/rik/AlongGPX
-python3 backend/app.py
+python3 backend/api/app.py
 ```
 Flask listens on http://localhost:5000
 
 **Terminal 2 - Frontend:**
 ```bash
-cd /home/rik/AlongGPX/web
+cd /home/rik/AlongGPX/frontend
 npm install
 npm run dev
 ```
@@ -204,7 +204,7 @@ Proxies `/api/*` to http://localhost:5000
 
 **Development with hot reload:**
 ```bash
-cd /home/rik/AlongGPX/docker
+cd /home/rik/AlongGPX/deployment
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 - Frontend: http://localhost:3000
@@ -212,7 +212,7 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 **Production build:**
 ```bash
-cd /home/rik/AlongGPX/docker
+cd /home/rik/AlongGPX/deployment
 docker-compose up
 ```
 - Frontend serves static build: http://localhost:3000
@@ -237,16 +237,16 @@ docker-compose up
 ## Adding New Features
 
 ### Adding a Preset
-1. Edit `presets.yaml` with new include/exclude filters
+1. Edit `data/presets.yaml` with new include/exclude filters
 2. Restart backend or reload page → dropdown auto-populates
 
 ### Adding a Filter Type
-1. Update `/api/config` response in `backend/app.py`
+1. Update `/api/config` response in `backend/api/app.py`
 2. Add input field in `SettingsForm.tsx`
 3. Pass via `/api/process` form data
 
 ### Custom Map Styling
-1. Edit `core/folium_map.py`: marker colors, zoom, track line style
+1. Edit `backend/core/folium_map.py`: marker colors, zoom, track line style
 2. Redeploy
 
 ## Troubleshooting
@@ -264,7 +264,7 @@ docker-compose up
 ### Job stuck in "processing"
 - Check Flask logs: `docker-compose logs -f app`
 - Long-running Overpass queries or dense regions slow things down
-- Increase `batch_km` in `config/config.yaml` to reduce API calls
+- Increase `ALONGGPX_BATCH_KM` environment variable to reduce API calls
 
 ## Future Enhancements
 

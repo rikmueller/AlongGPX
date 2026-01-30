@@ -1,127 +1,202 @@
-# ⚠️ Under Active Development
+# AlongGPX
+
+**Find OpenStreetMap POIs along your GPX tracks. Plan smarter: campsites, water sources, shelters, restaurants—everything you need along your route.**
 
 <div align="center">
-    <p style="background-color:#fff3cd;border:1px solid #ffeeba;padding:12px;border-radius:6px;color:#856404;max-width:900px;margin:0 auto;">
-        <strong>⚠️ Under active development</strong> — This project is under heavy development. Features, APIs, and behavior may change or break without notice. Documentation may be out of date. Use at your own risk.
-    </p>
+
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://github.com/rikmueller/alonggpx/pkgs/container/alonggpx)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 </div>
 
 ---
 
-# AlongGPX
-
-**Find OpenStreetMap POIs along GPX tracks. Plan trips smarter: campsites, water sources, shelters—all organized by distance from your route.**
-
 ## 🎯 What It Does
 
-You provide a GPX track (from your bike computer, phone, or mapping app). AlongGPX queries OpenStreetMap for everything you're looking for nearby.
+Upload a GPX track from your bike computer, phone, or mapping app. AlongGPX searches OpenStreetMap for points of interest along your route and generates:
 
-It creates:
-- **Excel spreadsheet** with names, contact info, opening hours, distances
-- **Interactive map** with color-coded markers showing each POI type
+- **📊 Excel spreadsheet** - Names, contact info, opening hours, distances from track
+- **🗺️ Interactive map** - Color-coded markers by POI type, multiple tile layers
+- **📍 Real-time visualization** - Watch POIs appear as the search progresses
 
-Perfect for trip planning: bikepacking, hiking, road trips, or any adventure where you need to know what's nearby.
+Perfect for planning bikepacking trips, long-distance hikes, road trips, or any adventure where you need to know what's nearby.
 
-## 🚀 Get Started
-AlongGPX comes in three flavours:
-- **🌐 Web UI** (easiest!) → [docs/QUICKSTART-FRONTEND.md](docs/QUICKSTART-FRONTEND.md)
-- CLI (Python) → [docs/quickstart-cli.md](docs/quickstart-cli.md)
-- REST API (Docker) → [docs/quickstart-docker.md](docs/quickstart-docker.md)
+---
 
-## 📁 Project Structure
+## 🚀 Quick Start
 
-```
-AlongGPX/
-├── web/                    # React frontend (modern web UI)
-│   ├── src/
-│   │   ├── DevApp.tsx     # Main application
-│   │   ├── api.ts         # API client with TypeScript types
-│   │   ├── components/    # UI components
-│   │   └── hooks/         # Custom React hooks (WebSocket)
-│   ├── package.json       # Frontend dependencies
-│   └── vite.config.ts     # Build configuration
-├── backend/                # Flask REST API
-│   ├── app.py             # API endpoints + job management
-│   └── requirements.txt   # Backend dependencies
-├── cli/                    # Command-line interface
-│   ├── main.py            # CLI entry point
-│   └── requirements-cli.txt
-├── core/                   # Shared pipeline modules
-│   ├── config.py          # Configuration management
-│   ├── presets.py         # Filter presets
-│   ├── gpx_processing.py  # GPX parsing and metrics
-│   ├── overpass.py        # Overpass API queries
-│   ├── filtering.py       # Result filtering
-│   ├── export.py          # Excel export
-│   └── folium_map.py      # Map generation
-├── docker/                 # Production deployment
-│   ├── docker-compose.yml # Container orchestration
-│   ├── Dockerfile         # Backend container
-│   ├── Dockerfile.nginx   # Frontend + Nginx
-│   └── nginx.conf         # Reverse proxy config
-├── config/                 # Shared configuration
-│   ├── config.yaml        # Defaults
-│   └── presets.yaml       # Filter presets
-├── data/
-│   ├── input/              # GPX files
-│   └── output/             # Generated results
-└── docs/                   # Documentation
-    ├── QUICKSTART-FRONTEND.md
-    ├── FRONTEND.md
-    ├── quickstart-cli.md
-    └── quickstart-docker.md
+### Docker (Recommended)
+
+Deploy using Docker Compose with pre-built images from GitHub Container Registry:
+
+```bash
+# Create project directory
+mkdir -p alonggpx/deployment/data/{input,output}
+cd alonggpx/deployment
+
+# Download production docker-compose.yml
+curl -O https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/docker-compose.yml
+
+# Download .env template
+curl -o .env https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/.env.example
+
+# Download presets file
+curl -o ../data/presets.yaml https://raw.githubusercontent.com/rikmueller/alonggpx/main/data/presets.yaml
+
+# Optional: Edit configuration
+nano .env
+
+# Pull and start services
+docker compose pull
+docker compose up -d
 ```
 
-## Configuration Files
+Open your browser to **http://localhost:3000**
 
-| File | Purpose |
-|------|---------|
-| [config.yaml](config.yaml) | Default settings (radius, step distance, Overpass servers) |
-| [presets.yaml](presets.yaml) | Pre-built filter profiles (camp_basic, drinking_water, shelters, etc.) |
+📖 **Full configuration options:** [docs/quickstart-docker.md](docs/quickstart-docker.md)
 
-## Features
-- **Modern web UI** with real-time interactive map visualization
-- **Instant GPX track preview** upon upload - see your route immediately
-- **Mobile-responsive design** with collapsible settings panel
-- **Real-time progress updates** via WebSocket (with polling fallback)
-- **Advanced filter management** with preset categories and custom filters
-- **Live POI markers** appearing on map as processing completes
-- Multiple map tile layers (OpenStreetMap, OpenTopoMap, CyclOSM)
-- Color-coded markers by filter type with custom icons
-- Export results to Excel with distances and contact information
-- Download interactive Folium maps with start/stop markers
-- Flexible OSM include/exclude filters with validation
-- Preset filter profiles for common search types (camping, water, food, shops)
-- Accurate WGS84 geodesic distance calculations
-- **CLI, Web UI, and REST API modes** for different workflows
+### Other Options
 
+- **🔧 Development setup** - Local Vite dev server, hot reload → [docs/quickstart-dev.md](docs/quickstart-dev.md)
+- **⌨️ CLI** - Command-line batch processing → [docs/quickstart-cli.md](docs/quickstart-cli.md)
 
-## Architecture
+---
 
-**Pipeline:**
-1. Load GPX track → compute total distance
-2. Query OpenStreetMap (Overpass API) with search circles along track
-3. Filter results by include/exclude rules
-4. Calculate geodesic distance to track (WGS84 ellipsoid)
-5. Export to Excel + interactive Folium map
+## 💡 How to Use
 
-## Contributing
+### 1. Upload Your GPX Track
 
-Pull requests are welcome. Please open an issue if you find bugs or want to request features.
+- Drag and drop your `.gpx` file onto the map
+- Your track appears instantly (blue line with start/end markers)
+- Map automatically centers on your route
 
-## Credits
+### 2. Choose What to Find
 
-AlongGPX stands on the shoulders of great open-source projects:
+**Quick presets:**
+- 🏕️ Campsites
+- 💧 Drinking water
+- 🏠 Accommodation (hotels, hostels, B&Bs)
+- 🍴 Food & restaurants
+- 🏪 Shops & supermarkets
+- 🚽 Public toilets
+- ⛺ Shelters
 
-- **[OpenStreetMap](https://www.openstreetmap.org/)** - The collaborative mapping platform providing the data
-- **[Overpass API](https://overpass-api.de/)** - Powerful API for querying OpenStreetMap data
-- **[gpxpy](https://github.com/tkrajina/gpxpy)** - Python GPX file parsing library
-- **[Folium](https://github.com/python-visualization/folium)** - Python data to interactive Leaflet maps
-- **[Shapely](https://github.com/Toblerity/Shapely)** - Python geometric operations library
-- **[pandas](https://github.com/pandas-dev/pandas)** - Data analysis and manipulation library
-- **[openpyxl](https://github.com/chronossc/openpyxl)** - Python library to read/write Excel files
-- **[Flask](https://github.com/pallets/flask)** - Web framework for the REST API
-- **[Requests](https://github.com/psf/requests)** - HTTP library for Python
-- **[tqdm](https://github.com/tqdm/tqdm)** - Progress bar library
-- **[GPX Studio](https://gpx.studio/)** - Modern GPX viewer and editor, inspired me to start this project
+**Custom filters:**
+Build your own using OpenStreetMap tags (e.g., `amenity=restaurant`, `shop=bicycle`)
+
+### 3. Generate Results
+
+- Set your search radius (1-50 km from track)
+- Click **Generate Results**
+- Watch POIs appear on the map in real-time
+- Download Excel spreadsheet or interactive HTML map
+
+### 4. Explore Results
+
+- **Interactive map** - Click markers for details (name, distance, website, hours)
+- **Excel export** - Sorted by distance from start, with all metadata
+- **Multiple tile layers** - OpenStreetMap, OpenTopoMap, CyclOSM
+- **Mobile-friendly** - Works on phones and tablets
+
+---
+
+## ✨ Key Features
+
+- **🗺️ Map-first interface** - See your track and POIs continuously
+- **⚡ Real-time updates** - POIs appear as they're found
+- **📱 Mobile responsive** - Collapsible settings, touch-friendly
+- **🎨 Smart coloring** - Different colors for different POI types
+- **🎯 Accurate distances** - WGS84 geodesic calculations
+- **📦 Self-contained** - Runs offline after setup (uses public Overpass API)
+- **🔒 Privacy-focused** - Your GPX files never leave your device/server
+
+---
+
+## 🏗️ Architecture
+
+AlongGPX queries OpenStreetMap via the Overpass API:
+
+1. **Parse GPX** - Extract track coordinates and calculate total distance
+2. **Query Overpass** - Search for POIs in circles along your route
+3. **Filter results** - Apply include/exclude rules, calculate distances
+4. **Export** - Generate Excel spreadsheet and interactive Folium map
+
+All processing happens server-side. Results are cached for quick downloads.
+
+---
+
+## ⚙️ Configuration
+
+AlongGPX is configured via environment variables. See [deployment/.env](deployment/.env) for available options:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ALONGGPX_RADIUS_KM` | `5` | Search radius around track (km) |
+| `ALONGGPX_BATCH_KM` | `50` | Track distance per Overpass query |
+| `ALONGGPX_TIMEZONE` | `UTC` | Timezone for output timestamps |
+| `ALONGGPX_PROJECT_NAME` | `AlongGPX` | Default project name |
+
+**Filter presets** are defined in [data/presets.yaml](data/presets.yaml). Add your own!
+
+---
+
+## 📖 Documentation
+
+- **[Quick Start (Docker)](docs/quickstart-docker.md)** - Production deployment with GHCR
+- **[Development Setup](docs/quickstart-dev.md)** - Local dev with Vite & Docker
+- **[CLI Usage](docs/quickstart-cli.md)** - Command-line batch processing
+- **[Frontend Architecture](docs/FRONTEND.md)** - React/TypeScript details
+- **[Quick Reference](FRONTEND_QUICKREF.md)** - Developer cheat sheet
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Please open an issue first to discuss major changes.
+
+### Development
+
+```bash
+# Clone repository
+git clone https://github.com/rikmueller/alonggpx.git
+cd alonggpx/deployment
+
+# Configure environment
+cp .env.example .env
+
+# Start development environment with hot reload
+docker compose -f docker-compose.dev.yml up
+```
+
+See [docs/quickstart-dev.md](docs/quickstart-dev.md) for detailed setup instructions.
+
+---
+
+## 📜 License
+
+MIT License - see [LICENSE](LICENSE) for details
+
+---
+
+## 🙏 Credits
+
+Built with amazing open-source projects:
+
+- **[OpenStreetMap](https://www.openstreetmap.org/)** - Community-driven map data
+- **[Overpass API](https://overpass-api.de/)** - OSM query infrastructure
+- **[React](https://react.dev/)** + **[TypeScript](https://www.typescriptlang.org/)** - Modern web framework
+- **[Leaflet](https://leafletjs.com/)** - Interactive maps
+- **[Flask](https://flask.palletsprojects.com/)** - Python web framework
+- **[pandas](https://pandas.pydata.org/)** + **[openpyxl](https://openpyxl.readthedocs.io/)** - Data processing
+- **[Folium](https://python-visualization.github.io/folium/)** - Python → Leaflet maps
+
+Inspired by **[GPX Studio](https://gpx.studio/)** ❤️
+
+---
+
+## ⚠️ Development Status
+
+This project is under active development. Features and APIs may change. Documentation may lag behind implementation. Use at your own risk for production workloads.
+
+**Current focus:** Stabilizing Docker deployment and improving UI/UX.
 

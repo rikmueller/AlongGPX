@@ -60,15 +60,15 @@ python3 cli/main.py --gpx-file ./data/input/track.gpx --preset drinking_water
 ```
 
 ## Configuration & Presets
-- Defaults: `config/config.yaml`
-- Presets: `config/presets.yaml`
-- Precedence: CLI args > environment variables > config.yaml
+- Environment variables: See `cli/.env` or export individually
+- Presets: `data/presets.yaml`
+- Precedence: CLI args > environment variables > built-in defaults
 
 ### Config Reference
 
-When CLI filters or presets are provided, `config.yaml:search.include/exclude` are ignored (CLI takes precedence).
+When CLI filters or presets are provided, environment variable defaults for include/exclude are ignored (CLI takes precedence).
 
-| config.yaml Key | Env Variable | CLI Argument | Purpose |
+| Configuration | Env Variable | CLI Argument | Purpose |
 |------------|--------------|--------------|---------|
 | `project.name` | `ALONGGPX_PROJECT_NAME` | `--project-name` | Output filename prefix and project identifier |
 | `project.output_path` | `ALONGGPX_OUTPUT_PATH` | `--output-path` | Directory for Excel and HTML outputs |
@@ -99,4 +99,4 @@ When CLI filters or presets are provided, `config.yaml:search.include/exclude` a
 ## Troubleshooting
 - Run from repo root (`cd AlongGPX`)
 - Check filter syntax: `key=value`
-- If Overpass times out, reduce query complexity or adjust `batch_km` in `config/config.yaml`
+- If Overpass times out, increase `ALONGGPX_BATCH_KM` environment variable to reduce API calls
