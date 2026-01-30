@@ -4,8 +4,11 @@ import react from '@vitejs/plugin-react'
 import dotenv from 'dotenv'
 import { resolve } from 'path'
 
-// Load config/.env (shared) and optional web/.env.local overrides
-const configEnv = dotenv.config({ path: resolve(__dirname, '../config/.env') }).parsed || {}
+// Load cli/.env for shared base configuration
+const cliEnv = dotenv.config({ path: resolve(__dirname, '..', 'cli', '.env') }).parsed || {}
+// Load frontend/.env for frontend-specific configuration (overrides cli/.env)
+const frontendEnv = dotenv.config({ path: resolve(__dirname, '.env') }).parsed || {}
+// Load frontend/.env.local for local development overrides (highest priority)
 const localEnv = dotenv.config({ path: resolve(__dirname, '.env.local') }).parsed || {}
 
 const parseHosts = (value?: string) =>
@@ -32,11 +35,14 @@ const buildClientEnv = (vars: Record<string, string>) => {
 
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, process.cwd(), '')
-  const env = { ...configEnv, ...viteEnv, ...localEnv, ...process.env }
+  const env = { ...cliEnv, ...frontendEnv, ...viteEnv, ...localEnv, ...process.env }
 
   const allowedHosts = parseHosts(env.VITE_ALLOWED_HOSTS || env.ALONGGPX_HOSTNAME) || ['.']
   const hmrHost = env.ALONGGPX_HOSTNAME || env.VITE_HMR_HOST
   const clientEnv = buildClientEnv(env as Record<string, string>)
+  
+  // Use environment variable for backend URL (Docker uses service name, local uses localhost)
+  const backendTarget = env.VITE_BACKEND_URL || 'http://localhost:5000'
 
   return {
     plugins: [react()],
@@ -53,12 +59,12 @@ export default defineConfig(({ mode }) => {
       }),
       proxy: {
         '/api': {
-          target: 'http://localhost:5000',
+          target: backendTarget,
           changeOrigin: true,
           rewrite: (path) => path,
         },
         '/socket.io': {
-          target: 'http://localhost:5000',
+          target: backendTarget,
           changeOrigin: true,
           ws: false,  // Disable WebSocket upgrade, use polling only
         },

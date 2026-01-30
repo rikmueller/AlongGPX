@@ -9,16 +9,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements
-COPY backend/requirements.txt requirements.txt
+COPY backend/api/requirements.txt requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code (from build context root)
-COPY core ./core
-COPY cli ./cli
 COPY backend ./backend
-COPY config ./config
+COPY cli ./cli
+COPY data/presets.yaml ./data/presets.yaml
 
 # Create data directories with proper permissions
 RUN mkdir -p /app/data/input /app/data/output && chmod 777 /app/data/output
@@ -48,6 +47,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Expose port
 EXPOSE 5000
+
+# Run Flask app
+CMD ["python", "backend/api/app.py"]
 
 # Run Flask app
 CMD ["python", "-m", "flask", "--app", "backend.app", "run", "--host", "0.0.0.0", "--port", "5000"]
