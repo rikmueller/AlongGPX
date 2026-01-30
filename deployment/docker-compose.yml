@@ -1,3 +1,10 @@
+# ==============================================================================
+# LOCAL BUILD VERSION
+# ==============================================================================
+# Builds images from source code in parent directory
+# Use this when you want to modify or customize the source code
+# ==============================================================================
+
 services:
   # Flask backend API
   app:

@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend ./backend
 COPY cli ./cli
 COPY data/presets.yaml ./data/presets.yaml
+COPY data/input/example.gpx ./data/input/example.gpx
 
 # Create data directories with proper permissions
 RUN mkdir -p /app/data/input /app/data/output && chmod 777 /app/data/output
@@ -50,6 +51,3 @@ EXPOSE 5000
 
 # Run Flask app
 CMD ["python", "backend/api/app.py"]
-
-# Run Flask app
-CMD ["python", "-m", "flask", "--app", "backend.app", "run", "--host", "0.0.0.0", "--port", "5000"]

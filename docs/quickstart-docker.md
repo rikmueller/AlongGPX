@@ -1,157 +1,151 @@
-# AlongGPX - Docker Quickstart (Production)
+# AlongGPX - Docker Quickstart
 
-Deploy AlongGPX using Docker Compose with pre-built images from GitHub Container Registry (GHCR).
+Deploy AlongGPX using Docker Compose. **Three deployment options** available - choose the one that fits your needs.
 
-## 🚀 Quick Start
+## 🎯 Which Setup Should I Use?
+
+| Scenario | Compose File | Purpose |
+|----------|--------------|---------|
+| **Just want to use AlongGPX** ✅ | `docker-compose.ghcr.yml` | Pre-built images from GitHub Container Registry |
+| Modifying source code | `docker-compose.yml` | Build from local source |
+| Frontend development | `docker-compose.dev.yml` | Hot reload for frontend changes |
+
+**👉 Most users should use Option 1 (GHCR)**
+
+---
+
+## 📖 Table of Contents
+
+- [Option 1: GHCR Images (Recommended)](#option-1-ghcr-images-recommended)
+- [Option 2: Build from Source](#option-2-build-from-source)
+- [Configuration](#️-configuration)
+- [Common Operations](#-common-operations)
+- [Data Directories](#-data-directories)
+- [Customizing Presets](#-customizing-presets)
+- [Production Deployment](#-production-deployment)
+- [Troubleshooting](#-troubleshooting)
+
+---
+
+## Option 1: GHCR Images (Recommended)
 
 ### Prerequisites
 - Docker 20.10+
-- Docker Compose 2.0+ (or docker compose plugin)
+- Docker Compose 2.0+
 - 2GB free disk space
-- Internet connection (for pulling images)
 
-### Option A: Clone Repository (Recommended)
+### Quick Start
 
-Get the complete setup with example files:
+```bash
+# Create project directory
+mkdir -p alonggpx && cd alonggpx
+
+# Download GHCR compose file
+curl -O https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/docker-compose.ghcr.yml
+
+# Download .env template
+curl -o .env https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/.env.example
+
+# Optional: Edit configuration
+nano .env
+
+# Pull and start services
+docker compose -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.ghcr.yml up -d
+```
+
+**Open:** http://localhost:3000
+
+### Update to Latest Version
+
+```bash
+docker compose -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.ghcr.yml up -d
+```
+
+---
+
+## Option 2: Build from Source
+
+Use this if you want to modify the code or don't trust pre-built images.
+
+### Prerequisites
+- Docker 20.10+
+- Docker Compose 2.0+
+- Git
+
+### Setup
 
 ```bash
 # Clone repository
 git clone https://github.com/rikmueller/alonggpx.git
 cd alonggpx/deployment
 
-# Copy and configure environment file
+# Copy environment template
 cp .env.example .env
-nano .env  # Edit configuration (see Configuration section below)
 
-# Pull latest images
-docker compose pull
-
-# Start services
-docker compose up -d
+# Build and start
+docker compose up --build -d
 ```
 
-Open your browser to **http://localhost:3000**
+**Open:** http://localhost:3000
 
-### Option B: Manual Setup
-
-Create your own deployment without cloning:
-
-#### 1. Create directory structure
+### Rebuild After Code Changes
 
 ```bash
-mkdir -p alonggpx/deployment/{data/{input,output}}
-cd alonggpx/deployment
+cd deployment
+docker compose up --build -d
 ```
-
-#### 2. Download configuration files
-
-```bash
-# Download docker-compose.yml
-curl -o docker-compose.yml \
-  https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/docker-compose.yml
-
-# Download .env.example
-curl -o .env.example \
-  https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/.env.example
-
-# Download presets file
-curl -o ../data/presets.yaml \
-  https://raw.githubusercontent.com/rikmueller/alonggpx/main/data/presets.yaml
-
-# Copy and configure environment file
-cp .env.example .env
-nano .env  # Edit your configuration
-```
-
-#### 3. Start services
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-Open your browser to **http://localhost:3000**
 
 ---
 
-## 📋 How to Use
+## ⚙️ Configuration
 
-1. **Upload GPX**: Drag and drop your GPX track file
-2. **Configure**: Set search radius and choose filter presets
-3. **Generate**: Click "Generate Results" and monitor progress
-4. **Download**: Get Excel spreadsheet or interactive HTML map
+Configuration is managed through the `.env` file in your deployment directory.
 
----
+### Basic Settings
 
-## ⚙️ Configuration with .env File
-
-The `.env` file in the `deployment/` directory controls application behavior. This file is loaded by Docker Compose and provides default values.
-
-### Understanding .env Structure
-
-The `.env` file uses `KEY=VALUE` format (no spaces around `=`):
-
-```bash
-# Comments start with #
-ALONGGPX_RADIUS_KM=5        # Search radius in kilometers
-ALONGGPX_PROJECT_NAME=MyTrip  # Default project name
-```
-
-### Configuration Precedence
-
-Settings are applied in this order (highest priority first):
-
-1. **Web UI form inputs** - Values entered when generating results
-2. **`.env` file** - Your custom defaults in `deployment/.env`
-3. **Built-in defaults** - Hardcoded fallbacks in the application
-
-**Example**: If you set `ALONGGPX_RADIUS_KM=10` in `.env`, all processing will use 10km radius by default. However, if a user enters "5" in the web UI, that specific job will use 5km instead.
-
-### Essential Settings
-
-Edit your `.env` file:
+Edit `.env`:
 
 ```bash
 # Project Settings
-ALONGGPX_PROJECT_NAME=MyProject    # Default name for output files
-ALONGGPX_TIMEZONE=UTC              # Timezone for timestamps (e.g., Europe/Berlin)
+ALONGGPX_PROJECT_NAME=MyProject    # Default output filename prefix
+ALONGGPX_TIMEZONE=UTC              # Timezone for timestamps
 
 # Search Parameters
-ALONGGPX_RADIUS_KM=5               # Search radius around track (km)
+ALONGGPX_RADIUS_KM=5               # Default search radius (km)
 
 # Optional: Default Presets (semicolon-separated)
 ALONGGPX_PRESETS=camp_sites_tent;drinking_water
 
-# Optional: Default Filters (semicolon-separated)
+# Optional: Default Filters (semicolon-separated, key=value format)
 ALONGGPX_SEARCH_INCLUDE=amenity=shelter
 ALONGGPX_SEARCH_EXCLUDE=
 ```
 
 ### Advanced Settings
 
-These settings are pre-configured in `docker-compose.yml` but can be overridden in `.env`:
-
 ```bash
-# Overpass API Settings
-ALONGGPX_BATCH_KM=50                    # km of track per API call (higher = fewer calls)
+# Overpass API
+ALONGGPX_BATCH_KM=50                    # km per API call (higher = fewer calls, faster)
 ALONGGPX_OVERPASS_RETRIES=3            # Retry attempts for failed queries
 
-# Cleanup Settings
-ALONGGPX_CLEANUP_INTERVAL_SECONDS=600   # How often to run cleanup (10 minutes)
+# Cleanup
+ALONGGPX_CLEANUP_INTERVAL_SECONDS=600   # Cleanup job interval (10 minutes)
 ALONGGPX_JOB_TTL_SECONDS=21600         # Keep completed jobs for 6 hours
 ALONGGPX_OUTPUT_RETENTION_DAYS=10       # Delete output files after 10 days
-
-# Map Styling
-ALONGGPX_TRACK_COLOR=blue
-ALONGGPX_DEFAULT_MARKER_COLOR=gray
 ```
 
-### Applying Configuration Changes
+### Apply Configuration Changes
 
-After editing `.env`, restart the services:
+After editing `.env`, restart services:
 
 ```bash
-cd deployment
+# GHCR version
+docker compose -f docker-compose.ghcr.yml down
+docker compose -f docker-compose.ghcr.yml up -d
+
+# Local build version
 docker compose down
 docker compose up -d
 ```
@@ -160,119 +154,142 @@ docker compose up -d
 
 ## 🔄 Common Operations
 
-### View logs
+### View Logs
 
 ```bash
-cd deployment
+# GHCR version
+docker compose -f docker-compose.ghcr.yml logs -f
 
-# Follow logs in real-time
+# Local build
 docker compose logs -f
 
-# View last 100 lines
+# Last 100 lines only
 docker compose logs --tail=100
 
-# View only backend logs
-docker compose logs -f app
+# Backend only
+docker compose logs -f backend
 ```
 
-### Stop services
+### Stop Services
 
 ```bash
-cd deployment
+# GHCR
+docker compose -f docker-compose.ghcr.yml down
+
+# Local build
 docker compose down
 ```
 
-### Restart services
+### Restart Services
 
 ```bash
-cd deployment
+# GHCR
+docker compose -f docker-compose.ghcr.yml restart
+
+# Local build
 docker compose restart
 ```
 
-### Update to latest version
+### Check Status
 
 ```bash
-cd deployment
-docker compose pull
-docker compose up -d
-
-```
-
-### Check container status
-
-```bash
-cd deployment
 docker compose ps
 ```
 
 ---
 
-## 📂 Directory Structure
+## 📂 Data Directories
 
-After setup, your directory should look like this:
+AlongGPX uses these directories (automatically created by Docker if they don't exist):
 
-```
-alongGPX/
-├── deployment/
-│   ├── docker-compose.yml       # Service definitions
-│   ├── .env                     # Your configuration (edit this!)
-│   ├── .env.example             # Example configuration
-│   ├── Dockerfile               # Backend image build instructions
-│   ├── Dockerfile.nginx         # Frontend image build instructions
-│   └── nginx.conf               # Nginx reverse proxy config
-└── data/
-    ├── presets.yaml             # Filter presets (mounted read-only)
-    ├── input/                   # Place your GPX files here
-    │   └── track.gpx
-    └── output/                  # Generated files appear here
-        ├── *.xlsx               # Excel spreadsheets
-        └── *.html               # Interactive maps
+### data/input/
+- **Purpose:** GPX track files
+- **Included:** `example.gpx` (baked into Docker image)
+- **Optional:** Mount your own directory for CLI mode
+- **Volume mount:** Read-only
+
+### data/output/
+- **Purpose:** Generated Excel and HTML files
+- **Required:** Yes (results are written here)
+- **Volume mount:** Read-write
+- **Auto-cleanup:** Files older than 10 days deleted (configurable)
+
+### data/presets.yaml
+- **Purpose:** Filter preset definitions
+- **Included:** Baked into Docker image
+- **Optional:** Mount custom file to override built-in presets
+- **Volume mount:** Read-only
+
+**No manual directory creation needed!** Docker creates what's necessary. The image includes `presets.yaml` and `example.gpx` by default.
+
+### Using Your Own Presets
+
+If you want to customize presets:
+
+```bash
+# Download default presets as starting point
+curl -o presets.yaml https://raw.githubusercontent.com/rikmueller/alonggpx/main/data/presets.yaml
+
+# Edit presets.yaml
+nano presets.yaml
+
+# Uncomment the presets volume mount in docker-compose file:
+# volumes:
+#   - ./presets.yaml:/app/data/presets.yaml:ro  # <-- Uncomment this line
 ```
 
 ---
 
-## 🔧 Environment Variables Reference
+## 🎨 Customizing Presets
 
-Complete reference of all available environment variables:
+The Docker image includes default presets. To add your own:
 
-| Variable | Default | `.env` Usage | Description |
-|----------|---------|--------------|-------------|
-| `ALONGGPX_PROJECT_NAME` | `AlongGPX` | ✅ Edit in `.env` | Default project name for output files |
-| `ALONGGPX_RADIUS_KM` | `5` | ✅ Edit in `.env` | Search radius around track (km) |
-| `ALONGGPX_TIMEZONE` | `UTC` | ✅ Edit in `.env` | Timezone for timestamps (e.g., Europe/Berlin) |
-| `ALONGGPX_PRESETS` | _(empty)_ | ✅ Edit in `.env` | Default presets (semicolon-separated) |
-| `ALONGGPX_SEARCH_INCLUDE` | _(empty)_ | ✅ Edit in `.env` | Default include filters (semicolon-separated) |
-| `ALONGGPX_SEARCH_EXCLUDE` | _(empty)_ | ✅ Edit in `.env` | Default exclude filters (semicolon-separated) |
-| `ALONGGPX_BATCH_KM` | `50` | ⚙️ Advanced | km of track per Overpass API call |
-| `ALONGGPX_OVERPASS_RETRIES` | `3` | ⚙️ Advanced | Retry attempts for failed queries |
-| `ALONGGPX_CLEANUP_INTERVAL_SECONDS` | `600` | ⚙️ Advanced | Cleanup job interval (10 minutes) |
-| `ALONGGPX_JOB_TTL_SECONDS` | `21600` | ⚙️ Advanced | Keep completed jobs for 6 hours |
-| `ALONGGPX_OUTPUT_RETENTION_DAYS` | `10` | ⚙️ Advanced | Delete old output files after N days |
-| `ALONGGPX_TRACK_COLOR` | `blue` | ⚙️ Advanced | Track polyline color on maps |
-| `ALONGGPX_DEFAULT_MARKER_COLOR` | `gray` | ⚙️ Advanced | Fallback marker color |
+### 1. Download Default Presets
 
-**Legend:**
-- ✅ **Edit in `.env`** - Common settings you'll likely customize
-- ⚙️ **Advanced** - Pre-configured in `docker-compose.yml`, override only if needed
+```bash
+curl -o presets.yaml https://raw.githubusercontent.com/rikmueller/alonggpx/main/data/presets.yaml
+```
 
----
+### 2. Add Custom Preset
 
-## 🗂️ Volume Mounts Explained
+Edit `presets.yaml`:
 
-Docker Compose automatically mounts these directories from your repository:
+```yaml
+my_custom_preset:
+  name: "My Custom Preset"
+  category: "Accommodation"
+  info: "Find affordable hostels"
+  include:
+    - "tourism=hostel"
+    - "backpacker=yes"
+  exclude:
+    - "smoking=yes"
+```
+
+### 3. Mount Custom Presets
+
+Edit `docker-compose.ghcr.yml` (or `docker-compose.yml`):
 
 ```yaml
 volumes:
-  - ../data/input:/app/data/input:ro        # GPX files (read-only)
-  - ../data/output:/app/data/output:rw      # Results (read-write)
-  - ../data/presets.yaml:/app/data/presets.yaml:ro  # Filter presets (read-only)
+  - ../data/output:/app/data/output
+  - ./presets.yaml:/app/data/presets.yaml:ro  # Add this line
 ```
+
+### 4. Restart Services
+
+```bash
+docker compose -f docker-compose.ghcr.yml down
+docker compose -f docker-compose.ghcr.yml up -d
+```
+
+Your custom presets will now appear in the web UI dropdown!
 
 ---
 
 ## 🌐 Production Deployment
 
-### Behind Reverse Proxy (Nginx)
+### Behind Nginx Reverse Proxy
 
 ```nginx
 upstream alonggpx {
@@ -291,7 +308,7 @@ server {
     add_header X-XSS-Protection "1; mode=block" always;
     add_header X-Content-Type-Options "nosniff" always;
     
-    # Max upload size
+    # Max upload size for GPX files
     client_max_body_size 50M;
     
     location / {
@@ -301,32 +318,22 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # WebSocket support (for SocketIO)
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 }
 ```
 
-### With Traefik
-
-```yaml
-services:
-  alonggpx:
-    image: ghcr.io/rikmueller/alonggpx:latest
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.alonggpx.rule=Host(`gpx.example.com`)"
-      - "traefik.http.routers.alonggpx.entrypoints=websecure"
-      - "traefik.http.routers.alonggpx.tls.certresolver=letsencrypt"
-      - "traefik.http.services.alonggpx.loadbalancer.server.port=80"
-    networks:
-      - traefik
-```
-
 ### Resource Limits
 
+Edit `docker-compose.ghcr.yml`:
+
 ```yaml
 services:
-  alonggpx:
-    # ... other config
+  backend:
+    # ... existing config
     deploy:
       resources:
         limits:
@@ -339,56 +346,22 @@ services:
 
 ---
 
-## 🔍 Health Checks & Monitoring
-
-### Check Container Health
-
-```bash
-docker ps
-# Look for "healthy" status
-```
-
-### Manual Health Check
-
-```bash
-curl http://localhost:3000/health
-# Should return: {"status": "healthy", "service": "AlongGPX"}
-```
-
-### View Logs
-
-```bash
-# Follow logs
-docker logs -f alonggpx
-
-# Last 100 lines
-docker logs --tail=100 alonggpx
-
-# With timestamps
-docker logs --timestamps alonggpx
-```
-
----
-
 ## 🐛 Troubleshooting
 
-### Container won't start
+### Container Won't Start
 
 ```bash
 # Check logs
-cd deployment
-docker compose logs app
+docker compose -f docker-compose.ghcr.yml logs backend
 
-# Check if port is already in use
-netstat -tulpn | grep 3000
+# Check if port 3000 is in use
+sudo netstat -tulpn | grep 3000
 
-# Try different port (edit docker-compose.yml)
-# Change: "3000:80" to "8080:80"
-docker compose down
-docker compose up -d
+# Try different port (edit compose file):
+# Change "3000:80" to "8080:80"
 ```
 
-### "Permission denied" on volumes
+### Permission Denied on Volumes
 
 ```bash
 # Fix output directory permissions
@@ -396,105 +369,87 @@ sudo chmod 755 data/output
 sudo chown -R $(id -u):$(id -g) data/output
 ```
 
-### Overpass API timeouts
+### Overpass API Timeouts
 
-- Increase `ALONGGPX_BATCH_KM` to reduce number of queries
-- Check Overpass API status: https://overpass-api.de/api/status
-- Wait a few minutes and try again
+**Symptoms:** Job fails with "Overpass timeout" error
 
-### No results found
+**Solutions:**
+1. Increase `ALONGGPX_BATCH_KM` in `.env` to reduce API calls
+2. Check Overpass API status: https://overpass-api.de/api/status
+3. Wait a few minutes and retry
 
-- Verify filter syntax: `key=value` format
+### No Results Found
+
+**Check:**
+- Filter syntax is `key=value` format
+- POIs exist in your area (check OpenStreetMap)
+- Search radius is large enough
 - Test filters at https://overpass-turbo.eu/
-- Check that POIs exist in your area on OpenStreetMap
 
-### Job stuck in "processing"
+### Job Stuck in Processing
 
 ```bash
-# Check backend logs for errors
-cd deployment
-docker compose logs -f app | grep ERROR
+# View backend logs for errors
+docker compose logs -f backend | grep ERROR
 ```
 
-- Large GPX files may take several minutes
-- Very dense areas may timeout - increase `ALONGGPX_BATCH_KM` in `.env`
-- Try smaller radius or use fewer filters
+**Common causes:**
+- Very large GPX files take time
+- Dense urban areas need higher `ALONGGPX_BATCH_KM`
+- Network issues with Overpass API
 
 ---
 
-## 🔄 Updating to Latest Version
+## ❓ FAQ
+
+### Which compose file should I use?
+
+- **New users:** `docker-compose.ghcr.yml` (fastest, easiest)
+- **Developers:** `docker-compose.yml` or `docker-compose.dev.yml`
+- See [deployment/README.md](../deployment/README.md) for detailed comparison
+
+### Do I need to create data directories?
+
+**No!** Docker creates them automatically. The image includes `example.gpx` and `presets.yaml` by default.
+
+### Do I need to download presets.yaml?
+
+**No!** It's already in the Docker image. Only download if you want to customize presets.
+
+### How do I customize presets?
+
+See [Customizing Presets](#-customizing-presets) section above.
+
+### How do I update to latest version?
 
 ```bash
-cd deployment
-
-# Pull latest images
-docker compose pull
-
-# Restart with new images
-docker compose up -d
-
-# Clean up old images
-docker image prune -a
+docker compose -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.ghcr.yml up -d
 ```
 
----
+### Can I run this on a VPS/cloud server?
 
-## 📊 Data Persistence
+Yes! See [Production Deployment](#-production-deployment) section.
 
-### Backup Output Files
+### Where are my output files?
 
-```bash
-# Create backup
-tar -czf alonggpx-backup-$(date +%Y%m%d).tar.gz data/output/
-
-# Restore backup
-tar -xzf alonggpx-backup-20260130.tar.gz
-```
-
-### Automatic Cleanup
-
-AlongGPX automatically cleans up:
-- Old job entries (default: 6 hours)
-- Temporary files (default: 1 hour)
-- Output files (default: 10 days)
-
-Configure via environment variables (see Configuration section).
-
----
-
-## 🏗️ Advanced: Building from Source
-
-If you need to modify the source code or build your own images:
-
-```bash
-# Clone repository
-git clone https://github.com/rikmueller/alonggpx.git
-cd alonggpx/deployment
-
-# Edit .env configuration
-cp .env.example .env
-nano .env
-
-# Build images from source (instead of pulling from GHCR)
-docker compose build
-
-# Start with custom build
-docker compose up -d
-
-# View build logs
-docker compose logs -f
-```
-
-For development workflows with hot reload, see [docs/quickstart-dev.md](quickstart-dev.md).
+In `data/output/` directory. Files are named with your project name and timestamp.
 
 ---
 
 ## 📚 Next Steps
 
-- **Add custom presets** - Edit `data/presets.yaml`
-- **Integrate with automation** - See REST API documentation
-- **Set up monitoring** - Add Prometheus/Grafana
-- **Scale horizontally** - Run multiple instances behind load balancer
+- **Development workflow:** [quickstart-dev.md](quickstart-dev.md)
+- **CLI usage:** [quickstart-cli.md](quickstart-cli.md)
+- **Compose file comparison:** [../deployment/README.md](../deployment/README.md)
+- **API documentation:** Coming soon
 
-For development and customization, see [docs/quickstart-dev.md](quickstart-dev.md).
+---
+
+## 🔗 Additional Resources
+
+- **GitHub Repository:** https://github.com/rikmueller/alonggpx
+- **Docker Hub:** https://github.com/rikmueller/alonggpx/pkgs/container/alonggpx
+- **OpenStreetMap Wiki:** https://wiki.openstreetmap.org/wiki/Map_features
+- **Overpass API:** https://overpass-api.de/
 

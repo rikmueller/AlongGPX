@@ -31,24 +31,20 @@ Deploy using Docker Compose with pre-built images from GitHub Container Registry
 
 ```bash
 # Create project directory
-mkdir -p alonggpx/deployment/data/{input,output}
-cd alonggpx/deployment
+mkdir -p alonggpx && cd alonggpx
 
-# Download production docker-compose.yml
-curl -O https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/docker-compose.yml
+# Download GHCR docker-compose file
+curl -O https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/docker-compose.ghcr.yml
 
 # Download .env template
 curl -o .env https://raw.githubusercontent.com/rikmueller/alonggpx/main/deployment/.env.example
-
-# Download presets file
-curl -o ../data/presets.yaml https://raw.githubusercontent.com/rikmueller/alonggpx/main/data/presets.yaml
 
 # Optional: Edit configuration
 nano .env
 
 # Pull and start services
-docker compose pull
-docker compose up -d
+docker compose -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.ghcr.yml up -d
 ```
 
 Open your browser to **http://localhost:3000**

@@ -1,0 +1,50 @@
+# ==============================================================================
+# GHCR PRODUCTION VERSION
+# ==============================================================================
+# Uses pre-built images from GitHub Container Registry (ghcr.io)
+# Perfect for production deployments - just pull and run, no build step needed
+# ==============================================================================
+
+services:
+  backend:
+    image: ghcr.io/rikmueller/alonggpx-backend:latest
+    pull_policy: always
+    container_name: alonggpx-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      # Output directory: Required - for generated Excel/HTML files
+      - ../data/output:/app/data/output
+      # Input directory: Optional - only needed if you want to use CLI mode inside container
+      - ../data/input:/app/data/input
+      # Presets file: Optional - only needed if you want to override built-in presets
+      # - ../data/presets.yaml:/app/data/presets.yaml
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    image: ghcr.io/rikmueller/alonggpx-frontend:latest
+    pull_policy: always
+    container_name: alonggpx-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  data_output:
+  data_input:
