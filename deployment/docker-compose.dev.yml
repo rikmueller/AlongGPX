@@ -4,7 +4,7 @@ services:
     build:
       context: ..
       dockerfile: deployment/Dockerfile
-    container_name: alonggpx-app-dev
+    container_name: alonggpx-backend-dev
     ports:
       - "5000:5000"
     env_file:
@@ -46,15 +46,17 @@ services:
     container_name: alonggpx-frontend-dev
     ports:
       - "3000:3000"
+    env_file:
+      - .env  # Load ALONGGPX_HOSTNAME from .env
     environment:
       - VITE_BACKEND_URL=http://app:5000
-      - ALONGGPX_HOSTNAME=localhost
+      - ALONGGPX_HOSTNAME=${ALONGGPX_HOSTNAME:-localhost}
     volumes:
-      - ../web/src:/app/web/src
-      - ../web/index.html:/app/web/index.html
-      - ../web/vite.config.ts:/app/web/vite.config.ts
-      - ../web/tsconfig.json:/app/web/tsconfig.json
-      - ../web/tsconfig.node.json:/app/web/tsconfig.node.json
+      - ../frontend/src:/app/frontend/src
+      - ../frontend/index.html:/app/frontend/index.html
+      - ../frontend/vite.config.ts:/app/frontend/vite.config.ts
+      - ../frontend/tsconfig.json:/app/frontend/tsconfig.json
+      - ../frontend/tsconfig.node.json:/app/frontend/tsconfig.node.json
     depends_on:
       - app
     restart: unless-stopped

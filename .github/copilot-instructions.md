@@ -457,35 +457,12 @@ python3 backend/api/app.py &
 cd frontend && npm run dev
 ```
 
-### Multi-User Production (GHCR)
-```bash
-# Docker with pre-built images from GitHub Container Registry
-cd deployment
-docker compose -f docker-compose.ghcr.yml pull
-docker compose -f docker-compose.ghcr.yml up -d
-# Access at http://server:3000
-```
-
 ### Multi-User Production (Local Build)
 ```bash
 # Docker with local source builds
 cd deployment
 docker compose up --build -d
 # Access at http://server:3000
-```
-
-### CI/CD Pipeline
-```bash
-# Build and push to GHCR
-docker build -f deployment/Dockerfile -t ghcr.io/rikmueller/alonggpx-backend:latest .
-docker build -f frontend/Dockerfile -t ghcr.io/rikmueller/alonggpx-frontend:latest frontend/
-
-docker push ghcr.io/rikmueller/alonggpx-backend:latest
-docker push ghcr.io/rikmueller/alonggpx-frontend:latest
-
-# Deploy with GHCR images
-docker compose -f deployment/docker-compose.ghcr.yml pull
-docker compose -f deployment/docker-compose.ghcr.yml up -d
 ```
 
 ## Release & Git Workflow
